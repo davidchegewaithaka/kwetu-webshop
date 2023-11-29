@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="alert alert-danger" role="alert">
+            {{ product.name }} is already in your cart.
+            You will be redirected to the <a href="{% url 'view_cart' %}" class="alert-link">View Cart</a>.
+        </div>
+    </div>
+
+    <script>
+        // JavaScript code to redirect after a delay (you can customize this)
+        setTimeout(function(){
+            window.location.href = "{% url 'view_cart' %}";
+        }, 3000);  // Redirect after 3 seconds (adjust as needed)
+    </script>
+{% endblock %}
