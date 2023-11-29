@@ -16,7 +16,7 @@
                         <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ product.name }} - <strong>ksh{{ product.price }}</strong></h5>
-                            <p class="card-text">{{ product.description }}}</p>
+                            <p class="card-text">{{ product.description }}</p>
                             <form method="post" action="{% url 'add_to_cart' product.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-primary">Add to cart</button>
