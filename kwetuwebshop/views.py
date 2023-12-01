@@ -4,6 +4,49 @@ from .models import Product
 import base64
 import datetime
 import requests
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
+from .forms import CustomUserCreationForm, ProfileForm
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required  # Import login_required decorator
+
+
+def register(request):
+    if request.method == 'POST':
+        user_form = CustomUserCreationForm(request.POST)
+        profile_form = ProfileForm(request.POST)
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+            login(request, user)
+            return redirect('index')
+    else:
+        user_form = CustomUserCreationForm()
+        profile_form = ProfileForm()
+    return render(request, 'register.html', {'user_form': user_form, 'profile_form': profile_form})
+
+
+def user_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user:
+                login(request, user)
+                return redirect('index')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'login.html', {'form': form})
+
+
+def user_logout(request):
+    logout(request)
+    messages.success(request, 'You have been successfully logged out.')
+    return redirect('index')
 
 
 # Create your views here.
@@ -14,6 +57,7 @@ def index(request):
                   {'products': products})
 
 
+@login_required(login_url='login')  # Add this decorator to enforce login
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
 
@@ -28,9 +72,11 @@ def add_to_cart(request, product_id):
         return redirect('view_cart')  # Redirect to the cart page
     else:
         # If the product is already in the cart, display a message or handle accordingly
-        return render(request, 'product_already_in_cart.html', {'product': product})
+        messages.warning(request, 'This product is already in your cart.')
+        return redirect('view_cart')
 
 
+@login_required(login_url='login')  # Add this decorator to enforce login
 def view_cart(request):
     # Retrieve products in the cart based on the stored IDs
     cart = request.session.get('cart', [])
